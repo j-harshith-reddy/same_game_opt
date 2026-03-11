@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SameGame — DP Solver</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-bracket">[</span>
+        SAME<span class="logo-accent">GAME</span>
+        <span class="logo-bracket">]</span>
+      </div>
+      <div class="tagline">Dynamic Programming Visualizer</div>
+    </div>
+  </header>
+
+  <main class="layout">
+
+    <!-- LEFT PANEL: Controls + Info -->
+    <aside class="panel panel-left">
+
+      <section class="control-block">
+        <h2 class="panel-title">Board</h2>
+        <button id="btn-new-game" class="btn btn-primary">
+          <span class="btn-icon">⬛</span> New Game
+        </button>
+      </section>
+
+      <section class="control-block">
+        <h2 class="panel-title">Solver</h2>
+
+        <div class="solver-card" id="card-state" data-solver="state">
+          <div class="solver-badge">V1</div>
+          <div class="solver-info">
+            <div class="solver-name">State DP</div>
+            <div class="solver-subtitle">With Gravity + Column Shift</div>
+            <ul class="solver-features">
+              <li>✓ Cells fall after removal</li>
+              <li>✓ Empty columns collapse</li>
+              <li>✓ Board-state memoization</li>
+            </ul>
+          </div>
+          <button class="btn btn-solver" id="btn-solve-state">Solve</button>
+        </div>
+
+        <div class="solver-card" id="card-subset" data-solver="subset">
+          <div class="solver-badge">V2</div>
+          <div class="solver-info">
+            <div class="solver-name">Region Subset DP</div>
+            <div class="solver-subtitle">No Gravity · No Shift</div>
+            <ul class="solver-features">
+              <li>✓ Regions are static</li>
+              <li>✓ Bitmask over region subsets</li>
+              <li>✓ Mask-state memoization</li>
+            </ul>
+          </div>
+          <button class="btn btn-solver" id="btn-solve-subset">Solve</button>
+        </div>
+      </section>
+
+      <section class="control-block">
+        <h2 class="panel-title">Playback</h2>
+        <div class="playback-controls">
+          <button id="btn-prev" class="btn btn-sm" disabled>◀ Prev</button>
+          <button id="btn-play" class="btn btn-sm btn-play" disabled>▶ Play</button>
+          <button id="btn-next" class="btn btn-sm" disabled>Next ▶</button>
+        </div>
+        <div class="speed-control">
+          <label>Speed: <span id="speed-label">1×</span></label>
+          <input type="range" id="speed-slider" min="1" max="5" value="2" />
+        </div>
+      </section>
+
+      <section class="control-block">
+        <h2 class="panel-title">Active Solver</h2>
+        <div id="solver-indicator" class="solver-indicator none">
+          <span class="indicator-dot"></span>
+          <span id="indicator-text">No solver active</span>
+        </div>
+      </section>
+
+    </aside>
+
+    <!-- CENTER: Board -->
+    <section class="panel panel-center">
+      <div class="board-header">
+        <div class="score-display">
+          <div class="score-label">Score</div>
+          <div id="score-value" class="score-value">0</div>
+        </div>
+        <div class="move-display">
+          <div class="score-label">Move</div>
+          <div id="move-value" class="score-value">—</div>
+        </div>
+        <div class="move-display">
+          <div class="score-label">+Points</div>
+          <div id="move-score-value" class="score-value">—</div>
+        </div>
+      </div>
+
+      <div id="board-container" class="board-container">
+        <div id="game-board" class="game-board"></div>
+        <div id="board-overlay" class="board-overlay hidden">
+          <div class="overlay-spinner"></div>
+          <div id="overlay-text">Solving...</div>
+        </div>
+      </div>
+
+      <div class="board-footer">
+        <div id="status-bar" class="status-bar">Generate a new game to start</div>
+      </div>
+    </section>
+
+    <!-- RIGHT PANEL: Move Log + DP Info -->
+    <aside class="panel panel-right">
+
+      <section class="control-block">
+        <h2 class="panel-title">Move Log</h2>
+        <div id="move-log" class="move-log">
+          <div class="log-empty">No moves yet</div>
+        </div>
+      </section>
+
+      <section class="control-block">
+        <h2 class="panel-title">DP Complexity</h2>
+        <div id="dp-info" class="dp-info-box">
+          <div class="dp-row">
+            <span class="dp-label">Algorithm</span>
+            <span id="dp-algo" class="dp-value">—</span>
+          </div>
+          <div class="dp-row">
+            <span class="dp-label">State Space</span>
+            <span id="dp-state" class="dp-value">—</span>
+          </div>
+          <div class="dp-row">
+            <span class="dp-label">Memoization</span>
+            <span id="dp-memo" class="dp-value">—</span>
+          </div>
+          <div class="dp-row">
+            <span class="dp-label">Total Moves</span>
+            <span id="dp-moves" class="dp-value">—</span>
+          </div>
+          <div class="dp-row">
+            <span class="dp-label">Total Score</span>
+            <span id="dp-score" class="dp-value">—</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="control-block">
+        <h2 class="panel-title">Recurrence</h2>
+        <div id="recurrence-box" class="recurrence-box">
+          <div class="recurrence-empty">Select a solver to see the recurrence relation</div>
+        </div>
+      </section>
+
+    </aside>
+
+  </main>
+
+  <!-- TOAST NOTIFICATIONS -->
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="/static/script.js"></script>
+</body>
+</html>
